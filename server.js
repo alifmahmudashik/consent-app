@@ -1,5 +1,3 @@
-// server.js
-
 const express = require("express");
 const path = require("path");
 const geoip = require("geoip-lite");
@@ -7,15 +5,34 @@ const geoip = require("geoip-lite");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Allowed Domains
-const allowedDomains = [
-  "http://127.0.0.1:5500"
+// Allowed Hostnames (without www)
+const allowedHostnames = [
+  "127.0.0.1",  // Allow localhost (with any port)
+  "alifmahmud.com"
 ];
 
 // Middleware: Domain Check
 app.use((req, res, next) => {
   const origin = req.get("origin") || req.get("referer") || "";
-  const domainAllowed = allowedDomains.some((domain) => origin.startsWith(domain));
+  let hostname = "";
+
+  try {
+    hostname = new URL(origin).hostname;
+  } catch (err) {
+    hostname = "";
+  }
+
+  // Remove 'www.' from hostname if it exists
+  if (hostname.startsWith("www.")) {
+    hostname = hostname.slice(4);
+  }
+
+  // Allow any port for localhost
+  if (hostname === "127.0.0.1") {
+    hostname = "127.0.0.1";
+  }
+
+  const domainAllowed = allowedHostnames.includes(hostname);
 
   if (req.path.startsWith("/location") || domainAllowed) {
     return next();
@@ -39,7 +56,7 @@ app.get("/location", (req, res) => {
   });
 });
 
-// Home route (optional)
+// Home route
 app.get("/", (req, res) => {
   res.send("Domain Protected JS + Geo API is running.");
 });
