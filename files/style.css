@@ -46,7 +46,8 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding-bottom: 5px;
+    margin-bottom: -5px;
+    margin-top: -10px;
   }
   
   .bannerLogo {
