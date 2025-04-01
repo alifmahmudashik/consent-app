@@ -16,6 +16,7 @@ function log(data) {
 console.log(data);
 }
 
+
 function dataLayerPush(event) {
 window.dataLayer = window.dataLayer || [];
 window.dataLayer.push({
