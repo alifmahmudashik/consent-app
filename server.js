@@ -4,14 +4,11 @@ const path = require("path");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Allowed Hostnames (without www)
-const allowedHostnames = [
-  "127.0.0.1",  // Allow localhost (with any port)
-  "alifmahmud.com"
-];
+// Allowed Hostnames
+const allowedHostnames = ["127.0.0.1", "alifmahmud.com"];
 
-// Middleware: Domain Check
-app.use((req, res, next) => {
+// Middleware: Domain Check for /files
+app.use("/files", (req, res, next) => {
   const origin = req.get("origin") || req.get("referer") || "";
   let hostname = "";
 
@@ -21,31 +18,30 @@ app.use((req, res, next) => {
     hostname = "";
   }
 
-  // Remove 'www.' from hostname if it exists
   if (hostname.startsWith("www.")) {
     hostname = hostname.slice(4);
   }
 
-  // Allow any port for localhost
   if (hostname === "127.0.0.1") {
     hostname = "127.0.0.1";
   }
 
   const domainAllowed = allowedHostnames.includes(hostname);
 
-  if (req.path.startsWith("/files") || domainAllowed) {
+  if (domainAllowed) {
     return next();
   } else {
-    return res.status(403).json({ message: "Access Denied: Domain not allowed." });
+    return res.status(403).sendFile(path.join(__dirname, "public", "403.html"));
   }
 });
 
-// Serve JS & CSS
+// Static Serving
+app.use(express.static(path.join(__dirname, "public")));
 app.use("/files", express.static(path.join(__dirname, "files")));
 
-// Home route
+// Home Page
 app.get("/", (req, res) => {
-  res.send("Domain Protected JS + Files are running.");
+  res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
 app.listen(PORT, () => {
